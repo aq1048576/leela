@@ -1,0 +1,3 @@
+setup instructions:
+
+npm i
