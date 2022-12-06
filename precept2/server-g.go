@@ -25,7 +25,7 @@ const RECV_BUFFER_SIZE = 2048
 
 func main() {
 	// get port number from command line
-    __________
+    _____port _____
 
 	// Create a TCP socket and bind to IP address 127.0.0.1 and port
 	// Listen on socket for new connections

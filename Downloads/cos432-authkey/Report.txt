@@ -1,1 +1,43 @@
+The goal is to implement a system that is forward secure per session and protects against man in the middle attacks.
+We desire confidentiality, integrity, authenticity, and forward secrecy. 
+
+Our secure channel and encryption scheme must protect against all of the adversay reading our messages, corrupting our messages, 
+initating a man in the middle attack, hacking into our computer and seeing our internal state, or replaying the messages out of 
+order.
+
+Threat 1: The adversary may be reading our message, which would make them not confidential. 
+
+Mitigation: To encode our messages, we use a StreamCipher with a private key each session and changed nonce for each message.
+
+Threat 2: The adversay might alter our messages as they are sent so that the delivered and recieved messages are different, failing 
+integrity. 
+
+Mitigation: To prevent the attacker from corrupting our messages, we use a MAC which is appended to the message that includes the 
+nonce and encrypted message. The MAC computed on each message sent guarantees that we detect and drop any message that has been 
+changed since it was sent.
+
+Threat 3: The adversary may initiate a man in the middle attack by pretending to be the other sender and send fake keys to exchange, 
+thus intercepting our communications with each other and compromising authenticity, and subsequently decipher and send fake messages 
+between both sides. 
+
+Mitigation: To prevent man in the middle attacks or server impersonation, we use authenticated Diffie Hellman Key Exchange, using a 
+RSAKey pair where only the server actually knows the private key. We use the RSA signature protocol over the secure channel as part of
+establishing the secure session. We also return null and close the channel if we detect MITM attacks. 
+
+Threat 4: The adversary might compromise our computer, and view the internal state of all our instance variables, which would allow 
+them to decrypt everything in a session, but could also let them decrypt everything from previous sessions if they have been 
+recording our messages, failing forward secrecy across sessions. 
+
+Mitigation: We generate a new session key using Diffie Hellman Key exchange, which is done in a forward secure way using a prg, which 
+comes into play when we generate the random exponent. This ensures that the adversary cannot recover our former session keys, since 
+we use a prg, which is forward secure.
+
+Threat 5: The adversary might also initiate replay attacks by sending messages out of order to figure out what is happening.
+
+Mitigation: By using a nonce that is incremented deterministically and including it in the encrypted message, we can essentially 
+label the messages in the order they were sent, and when we compare the messages when they are recieved, we check that they are
+the message with the label corresponding to the currently incremented reciving, as expected. This way, we ensure that the MITM cannot 
+initiate a replay attack, and return null on all out of order messages. We do this by maintaining two nonce counters, one for sent
+and one for received. Over a SecureChannel, when two people are communicating, one will increment the nonce for each sent and one will
+increment the nonce for each recieved, and as long as the nonce sent over the message matches the one exepct
 
