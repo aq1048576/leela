@@ -1,3 +1,0 @@
-setup instructions:
-
-npm i
